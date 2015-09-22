@@ -12,6 +12,7 @@ Created by Jared Petersen
 #include <stdbool.h>
 #include <string.h>
 
+
 bool validCommand(char command[]);
 void invalidRequestErr(void);
 
@@ -21,6 +22,7 @@ Evaluates the arguments and runs the necessary commands
 */
 int main(int argc, char **argv)
 {
+    // Begin evaluating the commands
     if (argc == 1)
     {
         // They didn't ask us anything
@@ -47,17 +49,20 @@ int main(int argc, char **argv)
     {
         // They asked us to do something
         // Make sure the command is valid
-        if (validCommand(argv[1]))
+        if (validCommand(argv[1]) &&
+            strcmp(argv[1], "open") == 0 &&
+            strcmp(argv[2], "firefox") == 0)
         {
-            // Command is valid, run it
+            // Open FireFox
             system("open '/Applications/Firefox.app'");
-            printf(">> Done!\n");
         }
         else {
             // Tell them that it's not a valid request
             invalidRequestErr();
         }
     }
+
+    return 0;
 }
 
 /*
@@ -66,7 +71,8 @@ Will need the program to check a file for a list of commands in the future
 */
 bool validCommand(char command[])
 {
-    if (strcmp(command, "open") == 0)
+    if (strcmp(command, "open") == 0 ||
+        strcmp(command, "learn") == 0)
     {
         return true;
     }
