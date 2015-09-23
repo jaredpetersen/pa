@@ -12,8 +12,9 @@ Created by Jared Petersen
 #include <stdbool.h>
 #include <string.h>
 
+char *formatCommand(int count, char **arguments);
+void runCommand(char inputCommand[]);
 void badCommand(void);
-void runCommand(char inputCommand[], char inputTarget[]);
 
 /*
 Main method
@@ -27,38 +28,56 @@ int main(int argc, char **argv)
         // User only called the application, no arguments
         printf("What's up?\n");
     }
-    else if (argc == 2)
+    else if (argc >= 2)
     {
-        // User called the application with one argument
-        // One argument commands not yet supported
-        printf("Can you be more specific?\n");
-    }
-    else if (argc == 3)
-    {
-        // User called the application with two arguments
-        // Two argument commands are supported
-        runCommand(argv[1], argv[2]);
-    }
-    else if (argc > 3)
-    {
-        // User called the application with more than two arguments
-        // Behavior not yet supported
-        badCommand();
+        // Arguments are split up by spaces
+        // Format all of the arguments as one string
+        char *command = formatCommand(argc, argv);
+
+        // Run the command
+        runCommand(command);
     }
 
     return 0;
 }
 
 /*
+Format the command string by combining all of the terminal arguments
+*/
+char *formatCommand(int count, char **arguments) {
+    static char command[100];
+    for (int i = 1; i < count; i++)
+    {
+        if (i == 1)
+        {
+            // First iteration, copy the string into command
+            strcpy(command, arguments[i]);
+        }
+        else
+        {
+            // Everything else, add it on the the existing string
+            strcat(command, arguments[i]);
+        }
+
+        if (i != count - 1)
+        {
+            // Add a space at the end for each of the arguments
+            // with the exception of the last one
+            strcat(command, " ");
+        }
+    }
+    return command;
+}
+
+/*
 Runs the command if it exists
 */
-void runCommand(char inputCommand[], char inputTarget[])
+void runCommand(char *inputCommand)
 {
     // Begin process of retrieving all possible commands
     FILE *commandFile;
     commandFile = fopen("./commands/commands.txt", "r");
-    char command[50];
-    char target[50];
+    char command[100];
     char action[100];
 
     // Make sure that that we actually found the commands file
@@ -70,15 +89,15 @@ void runCommand(char inputCommand[], char inputTarget[])
     }
 
     // Loop over the lines in the file
+    // Went with ::::: as a separator because it's highly unlikely that
+    // would need to be in part of a commdand or action
     bool found = false;
-    while ((fscanf(commandFile, "%s %s : %[^\n]s", command, target, action) != EOF) &&
-           (!found))
+    while ((fscanf(commandFile, "%[^:::::]:::::%[^\n]\n", command, action) != EOF) && (!found))
     {
         // Check if the command on this line is the same
-        if ((strcmp(inputCommand, command) == 0) &&
-            (strcmp(inputTarget, target) == 0))
+        if ((strcasecmp(inputCommand, command) == 0))
         {
-            // Command and target exists, call off the search and run it
+            // Command exists, call off the search and run it
             found = true;
             system(action);
         }
@@ -99,5 +118,5 @@ void runCommand(char inputCommand[], char inputTarget[])
 Tells the user that the command does not exist
 */
 void badCommand() {
-    printf("I don't know how to do that :-(\n");
+    printf("I'm not sure what you mean :(\n");
 }
