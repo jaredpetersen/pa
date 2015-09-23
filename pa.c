@@ -1,9 +1,9 @@
 /*
 
-Computer Personal Assistant
-Please see README and LICENSE for more information
+Jane -- Your Personal Computer Assistant
 
 Created by Jared Petersen
+Please see README and LICENSE for more information
 
 */
 
@@ -13,8 +13,11 @@ Created by Jared Petersen
 #include <string.h>
 
 char *formatCommand(int count, char **arguments);
+void learnCommand(void);
+void forgetCommand(void);
 void runCommand(char inputCommand[]);
 void badCommand(void);
+
 
 /*
 Main method
@@ -26,7 +29,7 @@ int main(int argc, char **argv)
     if (argc == 1)
     {
         // User only called the application, no arguments
-        printf("What's up?\n");
+        system("echo \"Yes, $(whoami)? :)\"");
     }
     else if (argc >= 2)
     {
@@ -34,8 +37,21 @@ int main(int argc, char **argv)
         // Format all of the arguments as one string
         char *command = formatCommand(argc, argv);
 
-        // Run the command
-        runCommand(command);
+        if (strcasecmp(command, "learn") == 0)
+        {
+            // Learn a new command
+            learnCommand();
+        }
+        else if (strcasecmp(command, "forget") == 0)
+        {
+            // Forget an existing command
+            forgetCommand();
+        }
+        else
+        {
+            // Run the command
+            runCommand(command);
+        }
     }
 
     return 0;
@@ -67,6 +83,22 @@ char *formatCommand(int count, char **arguments) {
         }
     }
     return command;
+}
+
+/*
+Adds a new command to the list of available commands
+*/
+void learnCommand()
+{
+    printf("I cannot learn a new command at the moment.\n");
+}
+
+/*
+Removes a new command from the list of available commands
+*/
+void forgetCommand()
+{
+    printf("I cannot forget a command at the moment.\n");
 }
 
 /*
