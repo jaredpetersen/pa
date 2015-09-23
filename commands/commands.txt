@@ -1,0 +1,3 @@
+open browser : open http://www.google.com
+open music : open -a iTunes
+play music : open -a iTunes && osascript -e 'tell application "iTunes" to play'

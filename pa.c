@@ -12,9 +12,8 @@ Created by Jared Petersen
 #include <stdbool.h>
 #include <string.h>
 
-
-bool validCommand(char command[]);
-void invalidRequestErr(void);
+void badCommand(void);
+void runCommand(char inputCommand[], char inputTarget[]);
 
 /*
 Main method
@@ -22,69 +21,83 @@ Evaluates the arguments and runs the necessary commands
 */
 int main(int argc, char **argv)
 {
-    // Begin evaluating the commands
+    // Initialize the personal assistant
     if (argc == 1)
     {
-        // They didn't ask us anything
-        printf(">> What's up?\n");
+        // User only called the application, no arguments
+        printf("What's up?\n");
     }
     else if (argc == 2)
     {
-        // They asked us to do something
-        // Make sure the command is valid
-        if (validCommand(argv[1]))
-        {
-            // Ask for clarification since the command is too short
-            //char* newstring = argv[1];
-            //newstring[0] = 'S';
-            printf(">> %s what?\n", argv[1]);
-        }
-        else
-        {
-            // Tell them that it's not a valid request
-            invalidRequestErr();
-        }
+        // User called the application with one argument
+        // One argument commands not yet supported
+        printf("Can you be more specific?\n");
     }
-    else
+    else if (argc == 3)
     {
-        // They asked us to do something
-        // Make sure the command is valid
-        if (validCommand(argv[1]) &&
-            strcmp(argv[1], "open") == 0 &&
-            strcmp(argv[2], "firefox") == 0)
-        {
-            // Open FireFox
-            system("open '/Applications/Firefox.app'");
-        }
-        else {
-            // Tell them that it's not a valid request
-            invalidRequestErr();
-        }
+        // User called the application with two arguments
+        // Two argument commands are supported
+        runCommand(argv[1], argv[2]);
+    }
+    else if (argc > 3)
+    {
+        // User called the application with more than two arguments
+        // Behavior not yet supported
+        badCommand();
     }
 
     return 0;
 }
 
 /*
-Rudimentary check to make sure the commands issued are valid
-Will need the program to check a file for a list of commands in the future
+Runs the command if it exists
 */
-bool validCommand(char command[])
+void runCommand(char inputCommand[], char inputTarget[])
 {
-    if (strcmp(command, "open") == 0 ||
-        strcmp(command, "learn") == 0)
+    // Begin process of retrieving all possible commands
+    FILE *commandFile;
+    commandFile = fopen("./commands/commands.txt", "r");
+    char command[50];
+    char target[50];
+    char action[100];
+
+    // Make sure that that we actually found the commands file
+    if (commandFile == NULL)
     {
-        return true;
+        // File wasn't found
+        // Act as if we don't know that command (technically we know nothing...)
+        badCommand();
     }
-    else
+
+    // Loop over the lines in the file
+    bool found = false;
+    while ((fscanf(commandFile, "%s %s : %[^\n]s", command, target, action) != EOF) &&
+           (!found))
     {
-        return false;
+        // Check if the command on this line is the same
+        if ((strcmp(inputCommand, command) == 0) &&
+            (strcmp(inputTarget, target) == 0))
+        {
+            // Command and target exists, call off the search and run it
+            found = true;
+            system(action);
+        }
     }
+
+    // Check if the command was ever found
+    if (found == false)
+    {
+        // Command does not exist, let the user know
+        badCommand();
+    }
+
+    // Close the file
+    fclose(commandFile);
 }
 
 /*
-Prints an error message to let users know they didn't use a valid command
+Tells the user that the command does not exist
 */
-void invalidRequestErr(void) {
-    printf("Invalid command\n");
+void badCommand() {
+    printf("I don't know how to do that :-(\n");
 }
