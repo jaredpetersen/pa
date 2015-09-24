@@ -16,8 +16,9 @@ char *formatCommand(int count, char **arguments);
 void learnCommand(void);
 void forgetCommand(void);
 void runCommand(char inputCommand[]);
+char *promptUserValue(char prompt[]);
 void badCommand(void);
-
+void fileNotFound(void);
 
 /*
 Main method
@@ -60,7 +61,8 @@ int main(int argc, char **argv)
 /*
 Format the command string by combining all of the terminal arguments
 */
-char *formatCommand(int count, char **arguments) {
+char *formatCommand(int count, char **arguments)
+{
     static char command[100];
     for (int i = 1; i < count; i++)
     {
@@ -90,7 +92,36 @@ Adds a new command to the list of available commands
 */
 void learnCommand()
 {
-    printf("I cannot learn a new command at the moment.\n");
+    // Prompt the user for the command
+    char *command = promptUserValue("What is the command that you would like to use?");
+
+    // Prompt the user for the linux action
+    char *action = promptUserValue("What is the terminal command that you would like it to execute?");
+
+    // Open up the command file for editing
+    FILE *commandFile;
+    commandFile = fopen("./commands/commands.txt", "a+");
+
+    // Make sure that that we actually found the commands file
+    if (commandFile == NULL)
+    {
+        // File wasn't found
+        fileNotFound();
+    }
+
+    // Make sure the command doesn't already exist
+
+    // Set up the command string for output
+    strcat(command, ":::::");
+    strcat(action, "\n");
+    strcat(command, action);
+    // Write to the file
+    fprintf(commandFile, "%s", command);
+
+    // Close the file
+    fclose(commandFile);
+
+    printf("Command learned\n");
 }
 
 /*
@@ -117,7 +148,7 @@ void runCommand(char *inputCommand)
     {
         // File wasn't found
         // Act as if we don't know that command (technically we know nothing...)
-        badCommand();
+        fileNotFound();
     }
 
     // Loop over the lines in the file
@@ -147,8 +178,28 @@ void runCommand(char *inputCommand)
 }
 
 /*
+Prompt the user for a value
+*/
+char *promptUserValue(char *prompt)
+{
+    static char response[100];
+    puts(prompt);
+    scanf ("%[^\n]s", response);
+    return response;
+}
+
+/*
 Tells the user that the command does not exist
 */
-void badCommand() {
+void badCommand()
+{
     printf("I'm not sure what you mean :(\n");
+}
+
+/*
+Tells the user that it could not find the commands file
+*/
+void fileNotFound()
+{
+    printf("I can't seem to find my commands :(\n");
 }
