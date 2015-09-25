@@ -1,6 +1,6 @@
 /*
 
-Jane -- Your Personal Computer Assistant
+Your Personal Computer Assistant
 
 Created by Jared Petersen
 Please see README and LICENSE for more information
@@ -12,11 +12,11 @@ Please see README and LICENSE for more information
 #include <stdbool.h>
 #include <string.h>
 
-char *formatCommand(int count, char **arguments);
+void runCommand(char inputCommand[]);
 void learnCommand(void);
 void forgetCommand(void);
-void runCommand(char inputCommand[]);
 void promptUserValue(char *responseVar, char prompt[]);
+char *formatCommand(int count, char **arguments);
 bool checkCommandExists(char inputCommand[]);
 void badCommand(void);
 void fileNotFound(void);
@@ -39,6 +39,9 @@ int main(int argc, char **argv)
         // Format all of the arguments as one string
         char *command = formatCommand(argc, argv);
 
+        // Execute the command
+        // Check through the built-in commands first, then go check the
+        // ones in the file
         if (strcasecmp(command, "learn") == 0)
         {
             // Learn a new command
@@ -60,93 +63,11 @@ int main(int argc, char **argv)
 }
 
 /*
-Format the command string by combining all of the terminal arguments
-*/
-char *formatCommand(int count, char **arguments)
-{
-    static char command[100];
-    for (int i = 1; i < count; i++)
-    {
-        if (i == 1)
-        {
-            // First iteration, copy the string into command
-            strcpy(command, arguments[i]);
-        }
-        else
-        {
-            // Everything else, add it on the the existing string
-            strcat(command, arguments[i]);
-        }
-
-        if (i != count - 1)
-        {
-            // Add a space at the end for each of the arguments
-            // with the exception of the last one
-            strcat(command, " ");
-        }
-    }
-    return command;
-}
-
-/*
-Adds a new command to the list of available commands
-*/
-void learnCommand()
-{
-    // Prompt the user for the command and save it to command
-    char command[100];
-    promptUserValue(command, "What is the command that you would like me to learn?");
-
-    // Prompt the user for the linux action and save it to action
-    char action[100];
-    promptUserValue(action, "What is the terminal command that you would like it to execute?");
-
-    // Open up the command file for appending and reading
-    FILE *commandFile;
-    commandFile = fopen("./commands/commands.txt", "a+");
-
-    // Make sure that that we actually found the commands file
-    if (commandFile == NULL)
-    {
-        // File wasn't found
-        fileNotFound();
-    }
-
-    // Make sure the command doesn't already exist
-    if (checkCommandExists(command) == true)
-    {
-        printf("That command already exists\n");
-    }
-    else
-    {
-        // Set up the command string for output
-        strcat(command, ":::::");
-        strcat(action, "\n");
-        strcat(command, action);
-        //strcat(command, "ls\n");
-        // Write to the file
-        fprintf(commandFile, "%s", command);
-        printf("Command learned\n");
-    }
-
-    // Close the file
-    fclose(commandFile);
-}
-
-/*
-Removes a new command from the list of available commands
-*/
-void forgetCommand()
-{
-    printf("I cannot forget a command at the moment.\n");
-}
-
-/*
 Runs the command if it exists
 */
 void runCommand(char *inputCommand)
 {
-    // Begin process of retrieving all possible commands
+    // Begin process of retrieving all possible commands from the commands file
     FILE *commandFile;
     commandFile = fopen("./commands/commands.txt", "r");
     char command[100];
@@ -161,8 +82,8 @@ void runCommand(char *inputCommand)
     }
 
     // Loop over the lines in the file
-    // Went with ::::: as a separator because it's highly unlikely that
-    // would need to be in part of a commdand or action
+    // Went with ::::: as a separator because it's unlikely that it would need
+    // to be in part of a command or action
     bool found = false;
     while ((fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action) != EOF) && (!found))
     {
@@ -187,13 +108,80 @@ void runCommand(char *inputCommand)
 }
 
 /*
+Adds a new command to the list of available commands
+*/
+void learnCommand()
+{
+    // Prompt the user for the command and save it to command
+    char command[100];
+    promptUserValue(command,
+        "What command would you like me to learn?");
+
+    // Make sure the command doesn't already exist
+    if (checkCommandExists(command) == true)
+    {
+        printf("That command already exists\n");
+        exit(1);
+    }
+    else
+    {
+        // The command does not exist, we can add it
+        // Prompt the user for the linux command and save it to action
+        char action[100];
+        promptUserValue(action,
+            "What's the terminal command that you want it to execute?");
+
+        // Open up the command file for appending and reading
+        FILE *commandFile;
+        commandFile = fopen("./commands/commands.txt", "a+");
+
+        // Make sure that that we actually found the commands file
+        if (commandFile == NULL)
+        {
+            // File wasn't found
+            fileNotFound();
+        }
+
+        // Set up the command string for output
+        strcat(command, ":::::");
+        strcat(action, "\n");
+        strcat(command, action);
+
+        // Write to the file
+        fprintf(commandFile, "%s", command);
+
+        // Close the file
+        fclose(commandFile);
+
+        // Success!
+        printf("Command learned\n");
+    }
+}
+
+/*
+Removes a new command from the list of available commands (TODO)
+*/
+void forgetCommand()
+{
+    printf("I cannot forget a command at the moment.\n");
+}
+
+/*
+################################################################################
+Supporting Methods
+################################################################################
+*/
+
+/*
 Prompt the user for a value and save it to the variable responseVar
+
+Would normally use malloc, but we can't do that here since the function
+is called multiple times in succession and the memory can't be freed
+in between
 */
 void promptUserValue(char *responseVar, char *prompt)
 {
-    // Would normally use malloc, but we can't do that here since the function
-    // is called multiple times in succession and the memory can't be freed
-    // in between
+    // Set up the prompt
     printf("%s\n> ", prompt);
     fgets(responseVar, 100, stdin);
 
@@ -221,7 +209,39 @@ void promptUserValue(char *responseVar, char *prompt)
 }
 
 /*
+Format the command string by combining all of the terminal arguments into one
+string
+*/
+char *formatCommand(int count, char **arguments)
+{
+    // We will only have one command per run, so it's find to leave this static
+    static char command[100];
+    for (int i = 1; i < count; i++)
+    {
+        if (i == 1)
+        {
+            // First iteration, copy the string into command
+            strcpy(command, arguments[i]);
+        }
+        else
+        {
+            // Everything else, add it on the the existing string
+            strcat(command, arguments[i]);
+        }
+
+        if (i != count - 1)
+        {
+            // Add a space at the end for each of the arguments
+            // with the exception of the last one
+            strcat(command, " ");
+        }
+    }
+    return command;
+}
+
+/*
 Check if the command exists
+Return true if the command exists or false if it does not
 */
 bool checkCommandExists(char inputCommand[])
 {
@@ -238,7 +258,8 @@ bool checkCommandExists(char inputCommand[])
 
         char command[100];
         char action[100]; // Including because it makes the fscanf stuff easier
-        while (fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action) != EOF)
+        while (fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action)
+            != EOF)
         {
             // Check if the command on this line is the same
             if (strcasecmp(inputCommand, command) == 0)
@@ -259,11 +280,18 @@ bool checkCommandExists(char inputCommand[])
 }
 
 /*
+################################################################################
+Error Message Methods
+################################################################################
+*/
+
+/*
 Tells the user that the command does not exist
 */
 void badCommand()
 {
     printf("I'm not sure what you mean :(\n");
+    exit(1);
 }
 
 /*
@@ -272,4 +300,5 @@ Tells the user that it could not find the commands file
 void fileNotFound()
 {
     printf("I can't seem to find my commands :(\n");
+    exit(1);
 }
