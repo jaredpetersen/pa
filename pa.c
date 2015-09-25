@@ -16,7 +16,8 @@ char *formatCommand(int count, char **arguments);
 void learnCommand(void);
 void forgetCommand(void);
 void runCommand(char inputCommand[]);
-char *promptUserValue(char prompt[]);
+void promptUserValue(char *responseVar, char prompt[]);
+bool checkCommandExists(char inputCommand[]);
 void badCommand(void);
 void fileNotFound(void);
 
@@ -92,13 +93,15 @@ Adds a new command to the list of available commands
 */
 void learnCommand()
 {
-    // Prompt the user for the command
-    char *command = promptUserValue("What is the command that you would like to use?");
+    // Prompt the user for the command and save it to command
+    char command[100];
+    promptUserValue(command, "What is the command that you would like me to learn?");
 
-    // Prompt the user for the linux action
-    char *action = promptUserValue("What is the terminal command that you would like it to execute?");
+    // Prompt the user for the linux action and save it to action
+    char action[100];
+    promptUserValue(action, "What is the terminal command that you would like it to execute?");
 
-    // Open up the command file for editing
+    // Open up the command file for appending and reading
     FILE *commandFile;
     commandFile = fopen("./commands/commands.txt", "a+");
 
@@ -110,18 +113,24 @@ void learnCommand()
     }
 
     // Make sure the command doesn't already exist
-
-    // Set up the command string for output
-    strcat(command, ":::::");
-    strcat(action, "\n");
-    strcat(command, action);
-    // Write to the file
-    fprintf(commandFile, "%s", command);
+    if (checkCommandExists(command) == true)
+    {
+        printf("That command already exists\n");
+    }
+    else
+    {
+        // Set up the command string for output
+        strcat(command, ":::::");
+        strcat(action, "\n");
+        strcat(command, action);
+        //strcat(command, "ls\n");
+        // Write to the file
+        fprintf(commandFile, "%s", command);
+        printf("Command learned\n");
+    }
 
     // Close the file
     fclose(commandFile);
-
-    printf("Command learned\n");
 }
 
 /*
@@ -155,7 +164,7 @@ void runCommand(char *inputCommand)
     // Went with ::::: as a separator because it's highly unlikely that
     // would need to be in part of a commdand or action
     bool found = false;
-    while ((fscanf(commandFile, "%[^:::::]:::::%[^\n]\n", command, action) != EOF) && (!found))
+    while ((fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action) != EOF) && (!found))
     {
         // Check if the command on this line is the same
         if ((strcasecmp(inputCommand, command) == 0))
@@ -178,14 +187,75 @@ void runCommand(char *inputCommand)
 }
 
 /*
-Prompt the user for a value
+Prompt the user for a value and save it to the variable responseVar
 */
-char *promptUserValue(char *prompt)
+void promptUserValue(char *responseVar, char *prompt)
 {
-    static char response[100];
-    puts(prompt);
-    scanf ("%[^\n]s", response);
-    return response;
+    // Would normally use malloc, but we can't do that here since the function
+    // is called multiple times in succession and the memory can't be freed
+    // in between
+    printf("%s\n> ", prompt);
+    fgets(responseVar, 100, stdin);
+
+    // Make sure they actually gave us something
+    // TODO Figure out a way to also deal with only spaces
+    if (strcasecmp("\n", responseVar) == 0)
+    {
+        // User sent us nothing
+        printf("I'm sorry, but that's not a valid input :(\n");
+        exit(1);
+    }
+    else
+    {
+        // Remove the trailing newline that fgets tacks on
+        // TODO Figure out a way to remove unecessary spaces
+        int length = strlen(responseVar);
+        if (length > 0)
+        {
+            if (responseVar[length-1] == '\n')
+            {
+                responseVar[length-1] ='\0';
+            }
+        }
+    }
+}
+
+/*
+Check if the command exists
+*/
+bool checkCommandExists(char inputCommand[])
+{
+    // Check for built in commands
+    if (strcasecmp(inputCommand, "learn") == 0)
+    {
+        return true;
+    }
+    // Check for external commands
+    else
+    {
+        FILE *commandFile;
+        commandFile = fopen("./commands/commands.txt", "r");
+
+        char command[100];
+        char action[100]; // Including because it makes the fscanf stuff easier
+        while (fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action) != EOF)
+        {
+            // Check if the command on this line is the same
+            if (strcasecmp(inputCommand, command) == 0)
+            {
+                // Close the file
+                fclose(commandFile);
+
+                // Command exists, call off the search and run it
+                return true;
+            }
+        }
+        // Close the file
+        fclose(commandFile);
+
+        // Command does not exist
+        return false;
+    }
 }
 
 /*
