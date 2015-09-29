@@ -85,8 +85,9 @@ void runCommand(char *inputCommand)
     // Went with ::::: as a separator because it's unlikely that it would need
     // to be in part of a command or action
     bool found = false;
-    while ((fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action) != EOF) && (!found))
+    while ((fscanf(commandFile, "%[^◎]◎◎%[^\n]\n", command, action) != EOF) && (!found))
     {
+        puts(command);
         // Check if the command on this line is the same
         if ((strcasecmp(inputCommand, command) == 0))
         {
