@@ -82,12 +82,11 @@ void runCommand(char *inputCommand)
     }
 
     // Loop over the lines in the file
-    // Went with ::::: as a separator because it's unlikely that it would need
+    // Went with ◎◎ as a separator because it's unlikely that it would need
     // to be in part of a command or action
     bool found = false;
     while ((fscanf(commandFile, "%[^◎]◎◎%[^\n]\n", command, action) != EOF) && (!found))
     {
-        puts(command);
         // Check if the command on this line is the same
         if ((strcasecmp(inputCommand, command) == 0))
         {
@@ -144,7 +143,7 @@ void learnCommand()
         }
 
         // Set up the command string for output
-        strcat(command, ":::::");
+        strcat(command, "◎◎");
         strcat(action, "\n");
         strcat(command, action);
 
@@ -258,8 +257,8 @@ bool checkCommandExists(char inputCommand[])
         commandFile = fopen("./commands/commands.txt", "r");
 
         char command[100];
-        char action[100]; // Including because it makes the fscanf stuff easier
-        while (fscanf(commandFile, "%[^:]:::::%[^\n]\n", command, action)
+        //char action[100]; // Including because it makes the fscanf stuff easier
+        while (fscanf(commandFile, "%[^◎]◎◎%*[^\n]\n", command)
             != EOF)
         {
             // Check if the command on this line is the same
