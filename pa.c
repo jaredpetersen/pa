@@ -18,6 +18,7 @@ void forgetCommand(void);
 void promptUserValue(char *responseVar, char prompt[]);
 char *formatCommand(int count, char **arguments);
 bool checkCommandExists(char inputCommand[]);
+bool validString(char inputCommand[]);
 void badCommand(void);
 void fileNotFound(void);
 
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
         // Execute the command
         // Check through the built-in commands first, then go check the
         // ones in the file
-        if (strcasecmp(command, "learn") == 0)
+        if (strcasecmp(command, "learn command") == 0)
         {
             // Learn a new command
             learnCommand();
@@ -82,11 +83,12 @@ void runCommand(char *inputCommand)
     }
 
     // Loop over the lines in the file
-    // Went with ◎◎ as a separator because it's unlikely that it would need
-    // to be in part of a command or action
+    // Went with ASCII delimiters as because it's a fairly good solution to the
+    // delimiter collision issue, even though it means users won't be able to
+    // edit the commands file on their own
     bool found = false;
-    while ((fscanf(commandFile, "%[^◎]◎◎%[^\n]\n", command, action) != EOF)
-        && (!found))
+    while ((fscanf(commandFile, "%[^\x31]\x31%[^\x30]\x30", command, action)
+        != EOF) && (!found))
     {
         // Check if the command on this line is the same
         if ((strcasecmp(inputCommand, command) == 0))
@@ -144,8 +146,8 @@ void learnCommand()
         }
 
         // Set up the command string for output
-        strcat(command, "◎◎");
-        strcat(action, "\n");
+        strcat(command, "\x31");
+        strcat(action, "\x30");
         strcat(command, action);
 
         // Write to the file
@@ -187,8 +189,7 @@ void promptUserValue(char *responseVar, char *prompt)
     fgets(responseVar, 100, stdin);
 
     // Make sure they actually gave us something
-    // TODO Figure out a way to also deal with only spaces
-    if (strcasecmp("\n", responseVar) == 0)
+    if (!validString(responseVar))
     {
         // User sent us nothing
         printf("I'm sorry, but that's not a valid input :(\n");
@@ -215,7 +216,7 @@ string
 */
 char *formatCommand(int count, char **arguments)
 {
-    // We will only have one command per run, so it's find to leave this static
+    // We will only have one command per run, so it's fine to leave this static
     static char command[100];
     for (int i = 1; i < count; i++)
     {
@@ -247,7 +248,7 @@ Return true if the command exists or false if it does not
 bool checkCommandExists(char inputCommand[])
 {
     // Check for built in commands
-    if (strcasecmp(inputCommand, "learn") == 0)
+    if (strcasecmp(inputCommand, "learn command") == 0)
     {
         return true;
     }
@@ -258,7 +259,7 @@ bool checkCommandExists(char inputCommand[])
         commandFile = fopen("./commands/commands.txt", "r");
 
         char command[100];
-        while (fscanf(commandFile, "%[^◎]◎◎%*[^\n]\n", command) != EOF)
+        while (fscanf(commandFile, "%[^\x31]\x31%*[^\x30]\x30", command) != EOF)
         {
             // Check if the command on this line is the same
             if (strcasecmp(inputCommand, command) == 0)
@@ -276,6 +277,54 @@ bool checkCommandExists(char inputCommand[])
         // Command does not exist
         return false;
     }
+}
+
+/*
+Check if the string is valid for usage
+Return true if the string is valid or false if it is not
+*/
+bool validString(char inputCommand[])
+{
+    // Make sure we didn't just get a newline
+    if (strcasecmp("\n", inputCommand) == 0)
+    {
+        // We just got a newline
+        return false;
+    }
+
+    // Begin preparation for iteration
+    int length = strlen(inputCommand) - 1;
+    bool allSpaces = true;
+    int arrLocation;
+
+    // Iterate over the string
+    for (arrLocation = 0; arrLocation < length; arrLocation++)
+    {
+        // Check if the character doesn't have a space
+        if (inputCommand[arrLocation] != ' ')
+        {
+            // String has a character other than a space
+            allSpaces = false;
+        }
+
+        // Make sure the character isn't our special delimiter
+        if (inputCommand[arrLocation] == '\x31' ||
+            inputCommand[arrLocation] == '\x30')
+        {
+            // String contains our special delimiter
+            return false;
+        }
+    }
+
+    // Check if it doesn't have just spaces before continuing
+    if (allSpaces == true)
+    {
+        // String is all spaces
+        return false;
+    }
+
+    // Everything is good to go
+    return true;
 }
 
 /*
