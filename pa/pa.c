@@ -14,8 +14,8 @@ Please see README and LICENSE for more information
 
 #define fileFormatBoth "%[^\x31]\x31%[^\x30]\x30"
 #define fileFormatCommand "%[^\x31]\x31%*[^\x30]\x30"
-#define fileName "./commands"
-#define fileNameTemp "./commands_tmp"
+#define fileName "/var/pa/commands"
+#define fileNameTemp "/var/pa/commands_tmp"
 
 void runCommand(char *inputCommand);
 void learnCommand(void);
