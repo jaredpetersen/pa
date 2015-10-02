@@ -19,6 +19,7 @@ void promptUserValue(char *responseVar, char prompt[]);
 char *formatCommand(int count, char **arguments);
 bool checkCommandExists(char inputCommand[]);
 bool validString(char inputCommand[]);
+void formatWriteString(char *output, char *command, char *action);
 void badCommand(void);
 void fileNotFound(void);
 
@@ -48,7 +49,7 @@ int main(int argc, char **argv)
             // Learn a new command
             learnCommand();
         }
-        else if (strcasecmp(command, "forget") == 0)
+        else if (strcasecmp(command, "forget command") == 0)
         {
             // Forget an existing command
             forgetCommand();
@@ -117,8 +118,7 @@ void learnCommand()
 {
     // Prompt the user for the command and save it to command
     char command[100];
-    promptUserValue(command,
-        "What command would you like me to learn?");
+    promptUserValue(command, "What command would you like me to learn?");
 
     // Make sure the command doesn't already exist
     if (checkCommandExists(command) == true)
@@ -146,27 +146,93 @@ void learnCommand()
         }
 
         // Set up the command string for output
-        strcat(command, "\x31");
-        strcat(action, "\x30");
-        strcat(command, action);
+        char writeString[100];
+        formatWriteString(writeString, command, action);
 
         // Write to the file
-        fprintf(commandFile, "%s", command);
+        fprintf(commandFile, "%s", writeString);
 
         // Close the file
         fclose(commandFile);
 
         // Success!
-        printf("Command learned\n");
+        printf("Learned command\n");
     }
 }
 
 /*
-Removes a new command from the list of available commands (TODO)
+Removes a new command from the list of available commands
 */
 void forgetCommand()
 {
-    printf("I cannot forget a command at the moment.\n");
+    char inputCommand[100];
+    promptUserValue(inputCommand, "What command would you like me to forget?");
+
+    // Make sure the command doesn't already exist
+    if (checkCommandExists(inputCommand) == true)
+    {
+        // Open up the command file for reading
+        FILE *readFile;
+        readFile = fopen("./commands/commands.txt", "r");
+
+        // Make sure that that we actually found the commands file
+        if (readFile == NULL)
+        {
+            // File wasn't found
+            fileNotFound();
+        }
+
+        // Open up a new command file that will take the place of the old one
+        FILE *writeFile;
+        writeFile = fopen("./commands/commands_tmp.txt", "w");
+
+        // Make sure that that we are able to write a new file
+        if (writeFile == NULL)
+        {
+            // Not able to write to disk
+            printf("You haven't given me the permissions to do that :(");
+            exit(1);
+        }
+
+        // Write the old data to the temp file but exclude the stuff we are
+        // forgetting
+        char tempCommand[100];
+        char tempAction[100];
+        char writeString[100];
+        while (fscanf(readFile, "%[^\x31]\x31%[^\x30]\x30", tempCommand,
+            tempAction) != EOF)
+        {
+            // Check if the command on this line is the same
+            if ((strcasecmp(inputCommand, tempCommand) != 0))
+            {
+                // Not the section that needs to be deleted, add it
+                // Prepare the string for writing
+                formatWriteString(writeString, tempCommand, tempAction);
+
+                // Write to the temp file
+                fprintf(writeFile, "%s", writeString);
+
+                // Reset the write string
+                memset(&writeString[0], 0, sizeof(writeString));
+            }
+        }
+
+        // Close the files
+        fclose(readFile);
+        fclose(writeFile);
+
+        // Remove the old file and rename the new one
+        remove("./commands/commands.txt");
+        rename("./commands/commands_tmp.txt", "./commands/commands.txt");
+
+        // Success!
+        printf("Forgot command\n");
+    }
+    else
+    {
+        printf("That command does not exist\n");
+        exit(1);
+    }
 }
 
 /*
@@ -198,7 +264,6 @@ void promptUserValue(char *responseVar, char *prompt)
     else
     {
         // Remove the trailing newline that fgets tacks on
-        // TODO Figure out a way to remove unecessary spaces
         int length = strlen(responseVar);
         if (length > 0)
         {
@@ -325,6 +390,17 @@ bool validString(char inputCommand[])
 
     // Everything is good to go
     return true;
+}
+
+/*
+Prepare the string for writing to file
+*/
+void formatWriteString(char *output, char *command, char *action)
+{
+    strcat(output, command);
+    strcat(output, "\x31");
+    strcat(output, action);
+    strcat(output, "\x30");
 }
 
 /*
