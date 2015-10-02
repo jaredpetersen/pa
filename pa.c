@@ -12,13 +12,18 @@ Please see README and LICENSE for more information
 #include <stdbool.h>
 #include <string.h>
 
-void runCommand(char inputCommand[]);
+#define fileFormatBoth "%[^\x31]\x31%[^\x30]\x30"
+#define fileFormatCommand "%[^\x31]\x31%*[^\x30]\x30"
+#define fileName "./commands"
+#define fileNameTemp "./commands_tmp"
+
+void runCommand(char *inputCommand);
 void learnCommand(void);
 void forgetCommand(void);
-void promptUserValue(char *responseVar, char prompt[]);
-char *formatCommand(int count, char **arguments);
-bool checkCommandExists(char inputCommand[]);
-bool validString(char inputCommand[]);
+void promptUserValue(char *responseVar, char *prompt);
+void formatCommand(char *command, int count, char **arguments);
+bool checkCommandExists(char *inputCommand);
+bool validString(char *inputCommand);
 void formatWriteString(char *output, char *command, char *action);
 void badCommand(void);
 void fileNotFound(void);
@@ -39,7 +44,8 @@ int main(int argc, char **argv)
     {
         // Arguments are split up by spaces
         // Format all of the arguments as one string
-        char *command = formatCommand(argc, argv);
+        char command[100];
+        formatCommand(command, argc, argv);
 
         // Execute the command
         // Check through the built-in commands first, then go check the
@@ -71,7 +77,7 @@ void runCommand(char *inputCommand)
 {
     // Begin process of retrieving all possible commands from the commands file
     FILE *commandFile;
-    commandFile = fopen("./commands/commands.txt", "r");
+    commandFile = fopen(fileName, "r");
     char command[100];
     char action[100];
 
@@ -88,7 +94,7 @@ void runCommand(char *inputCommand)
     // delimiter collision issue, even though it means users won't be able to
     // edit the commands file on their own
     bool found = false;
-    while ((fscanf(commandFile, "%[^\x31]\x31%[^\x30]\x30", command, action)
+    while ((fscanf(commandFile, fileFormatBoth, command, action)
         != EOF) && (!found))
     {
         // Check if the command on this line is the same
@@ -116,11 +122,21 @@ Adds a new command to the list of available commands
 */
 void learnCommand()
 {
-    // Prompt the user for the command and save it to command
+    // Open the commands file up to make sure we can even learn a command
+    // (and for later use in writing to it)
+    FILE *commandFile;
+    commandFile = fopen(fileName, "a+");
+    if (commandFile == NULL)
+    {
+        // File wasn't found/wasn't able to be created
+        fileNotFound();
+    }
+
+    // Looks like we made it, prompt the user for the command and save it
     char command[100];
     promptUserValue(command, "What command would you like me to learn?");
 
-    // Make sure the command doesn't already exist
+    // Make sure the command doesn't already exist in the file
     if (checkCommandExists(command) == true)
     {
         printf("That command already exists\n");
@@ -133,17 +149,6 @@ void learnCommand()
         char action[100];
         promptUserValue(action,
             "What's the terminal command that you want it to execute?");
-
-        // Open up the command file for appending and reading
-        FILE *commandFile;
-        commandFile = fopen("./commands/commands.txt", "a+");
-
-        // Make sure that that we actually found the commands file
-        if (commandFile == NULL)
-        {
-            // File wasn't found
-            fileNotFound();
-        }
 
         // Set up the command string for output
         char writeString[100];
@@ -165,26 +170,25 @@ Removes a new command from the list of available commands
 */
 void forgetCommand()
 {
+    // Open up the command file to see if we can even forget a command
+    // (and for later use)
+    FILE *readFile;
+    readFile = fopen(fileName, "r");
+    if (readFile == NULL)
+    {
+        // File wasn't found
+        fileNotFound();
+    }
+
     char inputCommand[100];
     promptUserValue(inputCommand, "What command would you like me to forget?");
 
     // Make sure the command doesn't already exist
     if (checkCommandExists(inputCommand) == true)
     {
-        // Open up the command file for reading
-        FILE *readFile;
-        readFile = fopen("./commands/commands.txt", "r");
-
-        // Make sure that that we actually found the commands file
-        if (readFile == NULL)
-        {
-            // File wasn't found
-            fileNotFound();
-        }
-
         // Open up a new command file that will take the place of the old one
         FILE *writeFile;
-        writeFile = fopen("./commands/commands_tmp.txt", "w");
+        writeFile = fopen(fileNameTemp, "w");
 
         // Make sure that that we are able to write a new file
         if (writeFile == NULL)
@@ -199,7 +203,7 @@ void forgetCommand()
         char tempCommand[100];
         char tempAction[100];
         char writeString[100];
-        while (fscanf(readFile, "%[^\x31]\x31%[^\x30]\x30", tempCommand,
+        while (fscanf(readFile, fileFormatBoth, tempCommand,
             tempAction) != EOF)
         {
             // Check if the command on this line is the same
@@ -222,8 +226,8 @@ void forgetCommand()
         fclose(writeFile);
 
         // Remove the old file and rename the new one
-        remove("./commands/commands.txt");
-        rename("./commands/commands_tmp.txt", "./commands/commands.txt");
+        remove(fileName);
+        rename(fileNameTemp, fileName);
 
         // Success!
         printf("Forgot command\n");
@@ -279,10 +283,8 @@ void promptUserValue(char *responseVar, char *prompt)
 Format the command string by combining all of the terminal arguments into one
 string
 */
-char *formatCommand(int count, char **arguments)
+void formatCommand(char *command, int count, char **arguments)
 {
-    // We will only have one command per run, so it's fine to leave this static
-    static char command[100];
     for (int i = 1; i < count; i++)
     {
         if (i == 1)
@@ -303,14 +305,13 @@ char *formatCommand(int count, char **arguments)
             strcat(command, " ");
         }
     }
-    return command;
 }
 
 /*
 Check if the command exists
 Return true if the command exists or false if it does not
 */
-bool checkCommandExists(char inputCommand[])
+bool checkCommandExists(char *inputCommand)
 {
     // Check for built in commands
     if (strcasecmp(inputCommand, "learn command") == 0)
@@ -321,10 +322,10 @@ bool checkCommandExists(char inputCommand[])
     else
     {
         FILE *commandFile;
-        commandFile = fopen("./commands/commands.txt", "r");
+        commandFile = fopen(fileName, "r");
 
         char command[100];
-        while (fscanf(commandFile, "%[^\x31]\x31%*[^\x30]\x30", command) != EOF)
+        while (fscanf(commandFile, fileFormatCommand, command) != EOF)
         {
             // Check if the command on this line is the same
             if (strcasecmp(inputCommand, command) == 0)
@@ -348,7 +349,7 @@ bool checkCommandExists(char inputCommand[])
 Check if the string is valid for usage
 Return true if the string is valid or false if it is not
 */
-bool validString(char inputCommand[])
+bool validString(char *inputCommand)
 {
     // Make sure we didn't just get a newline
     if (strcasecmp("\n", inputCommand) == 0)

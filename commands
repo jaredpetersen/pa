@@ -1,0 +1,1 @@
+open browser1open http://www.google.com0open music1open -a iTunes0play music1open -a iTunes && osascript -e 'tell application "iTunes" to play'0pause music1open -a iTunes && osascript -e 'tell application "iTunes" to pause'0
