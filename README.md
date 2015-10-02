@@ -1,13 +1,13 @@
-# pa
+# Personal Assistant
 Your teachable, personal computer assistant. Inspired by
 [Hallie](https://github.com/mikemelch/hallie).
 
-## Install
-#### Easy Install
+# Install
+### Easy Install
 1. Download the code from GitHub with `git clone https://github.com/jaredpetersen/pa`
 2. Navigate to the new directory and run the installation script with `.\install.sh`
 
-#### Advanced Install
+### Advanced Install
 1. Download the code from GitHub with `git clone https://github.com/jaredpetersen/pa`
 2. Navigate to the pa folder within the cloned directory
 3. Run `gcc pa.c -o pa` to compile the code yourself
