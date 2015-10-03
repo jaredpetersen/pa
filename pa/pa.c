@@ -18,10 +18,10 @@ Please see README and LICENSE for more information
 void runCommand(char *inputCommand);
 void learnCommand(void);
 void forgetCommand(void);
-void promptUserValue(char *responseVar, char *prompt);
+void promptUserValue(char *responseVar, char *prompt, bool checkCommand);
 void formatCommand(char *command, int count, char **arguments);
 bool checkCommandExists(char *inputCommand);
-bool validString(char *inputCommand);
+bool validString(char *inputCommand, bool checkSingleQuote);
 void formatWriteString(char *output, char *command, char *action);
 void getFilePath(char *filePath);
 void getTempFilePath(char *filePath);
@@ -142,7 +142,7 @@ void learnCommand()
 
     // Looks like we made it, prompt the user for the command and save it
     char command[100];
-    promptUserValue(command, "What command would you like me to learn?");
+    promptUserValue(command, "What command would you like me to learn?", true);
 
     // Make sure the command doesn't already exist in the file
     if (checkCommandExists(command) == true)
@@ -156,7 +156,7 @@ void learnCommand()
         // Prompt the user for the linux command and save it to action
         char action[100];
         promptUserValue(action,
-            "What's the terminal command that you want it to execute?");
+            "What's the terminal command that you want it to execute?", false);
 
         // Set up the command string for output
         char writeString[100];
@@ -192,7 +192,8 @@ void forgetCommand()
     }
 
     char inputCommand[100];
-    promptUserValue(inputCommand, "What command would you like me to forget?");
+    promptUserValue(inputCommand, "What command would you like me to forget?",
+        true);
 
     // Make sure the command doesn't already exist
     if (checkCommandExists(inputCommand) == true)
@@ -266,14 +267,24 @@ Would normally use malloc, but we can't do that here since the function
 is called multiple times in succession and the memory can't be freed
 in between
 */
-void promptUserValue(char *responseVar, char *prompt)
+void promptUserValue(char *responseVar, char *prompt, bool checkCommand)
 {
     // Set up the prompt
-    printf("%s\n>< ", prompt);
+    printf("%s\n> ", prompt);
     fgets(responseVar, 100, stdin);
 
+    bool isValid;
+    if (checkCommand)
+    {
+        isValid = validString(responseVar, true);
+    }
+    else
+    {
+        isValid = validString(responseVar, false);
+    }
+
     // Make sure they actually gave us something
-    if (!validString(responseVar))
+    if (!isValid)
     {
         // User sent us nothing
         printf("I'm sorry, but that's not a valid input :(\n");
@@ -366,7 +377,7 @@ bool checkCommandExists(char *inputCommand)
 Check if the string is valid for usage
 Return true if the string is valid or false if it is not
 */
-bool validString(char *inputCommand)
+bool validString(char *inputCommand, bool checkSingleQuote)
 {
     // Make sure we didn't just get a newline
     if (strcasecmp("\n", inputCommand) == 0)
@@ -390,13 +401,18 @@ bool validString(char *inputCommand)
             allSpaces = false;
         }
 
+        // If the user cares about single quotes and it has them, fail it
+        if (checkSingleQuote && inputCommand[arrLocation] == '\'')
+        {
+            // String contains single quotes when we don't want it to
+            return false;
+        }
+
         // Make sure the character isn't our special delimiter
         if (inputCommand[arrLocation] == '\x001F' ||
             inputCommand[arrLocation] == '\x001E')
         {
             // String contains our special delimiter
-            puts("Delimiter\n");
-            puts(&inputCommand[arrLocation]);
             return false;
         }
     }
