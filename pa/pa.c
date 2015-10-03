@@ -12,10 +12,8 @@ Please see README and LICENSE for more information
 #include <stdbool.h>
 #include <string.h>
 
-#define fileFormatBoth "%[^\x31]\x31%[^\x30]\x30"
-#define fileFormatCommand "%[^\x31]\x31%*[^\x30]\x30"
-#define fileName "/var/pa/commands"
-#define fileNameTemp "/var/pa/commands_tmp"
+#define fileFormatBoth "%[^\x001F]\x001F%[^\x001E]\x001E"
+#define fileFormatCommand "%[^\x001F]\x001F%*[^\x001E]\x001E"
 
 void runCommand(char *inputCommand);
 void learnCommand(void);
@@ -25,6 +23,8 @@ void formatCommand(char *command, int count, char **arguments);
 bool checkCommandExists(char *inputCommand);
 bool validString(char *inputCommand);
 void formatWriteString(char *output, char *command, char *action);
+void getFilePath(char *filePath);
+void getTempFilePath(char *filePath);
 void badCommand(void);
 void fileNotFound(void);
 
@@ -76,10 +76,13 @@ Runs the command if it exists
 void runCommand(char *inputCommand)
 {
     // Begin process of retrieving all possible commands from the commands file
+    // Get the file path
+    char directory[100];
+    getFilePath(directory);
+
+    // Set up the file
     FILE *commandFile;
-    commandFile = fopen(fileName, "r");
-    char command[100];
-    char action[100];
+    commandFile = fopen(directory, "r");
 
     // Make sure that that we actually found the commands file
     if (commandFile == NULL)
@@ -93,6 +96,8 @@ void runCommand(char *inputCommand)
     // Went with ASCII delimiters as because it's a fairly good solution to the
     // delimiter collision issue, even though it means users won't be able to
     // edit the commands file on their own
+    char command[100];
+    char action[100];
     bool found = false;
     while ((fscanf(commandFile, fileFormatBoth, command, action)
         != EOF) && (!found))
@@ -124,8 +129,11 @@ void learnCommand()
 {
     // Open the commands file up to make sure we can even learn a command
     // (and for later use in writing to it)
+    // Get the file path
+    char directory[100];
+    getFilePath(directory);
     FILE *commandFile;
-    commandFile = fopen(fileName, "a+");
+    commandFile = fopen(directory, "a+");
     if (commandFile == NULL)
     {
         // File wasn't found/wasn't able to be created
@@ -172,8 +180,11 @@ void forgetCommand()
 {
     // Open up the command file to see if we can even forget a command
     // (and for later use)
+    // Get the file path
+    char directory[100];
+    getFilePath(directory);
     FILE *readFile;
-    readFile = fopen(fileName, "r");
+    readFile = fopen(directory, "r");
     if (readFile == NULL)
     {
         // File wasn't found
@@ -187,8 +198,11 @@ void forgetCommand()
     if (checkCommandExists(inputCommand) == true)
     {
         // Open up a new command file that will take the place of the old one
+        // Get the file path
+        char directoryTemp[100];
+        getFilePath(directoryTemp);
         FILE *writeFile;
-        writeFile = fopen(fileNameTemp, "w");
+        writeFile = fopen(directoryTemp, "w");
 
         // Make sure that that we are able to write a new file
         if (writeFile == NULL)
@@ -226,8 +240,8 @@ void forgetCommand()
         fclose(writeFile);
 
         // Remove the old file and rename the new one
-        remove(fileName);
-        rename(fileNameTemp, fileName);
+        remove(directory);
+        rename(directoryTemp, directory);
 
         // Success!
         printf("Forgot command\n");
@@ -255,7 +269,7 @@ in between
 void promptUserValue(char *responseVar, char *prompt)
 {
     // Set up the prompt
-    printf("%s\n> ", prompt);
+    printf("%s\n>< ", prompt);
     fgets(responseVar, 100, stdin);
 
     // Make sure they actually gave us something
@@ -321,8 +335,11 @@ bool checkCommandExists(char *inputCommand)
     // Check for external commands
     else
     {
+        // Get the file path
+        char directory[100];
+        getFilePath(directory);
         FILE *commandFile;
-        commandFile = fopen(fileName, "r");
+        commandFile = fopen(directory, "r");
 
         char command[100];
         while (fscanf(commandFile, fileFormatCommand, command) != EOF)
@@ -374,10 +391,12 @@ bool validString(char *inputCommand)
         }
 
         // Make sure the character isn't our special delimiter
-        if (inputCommand[arrLocation] == '\x31' ||
-            inputCommand[arrLocation] == '\x30')
+        if (inputCommand[arrLocation] == '\x001F' ||
+            inputCommand[arrLocation] == '\x001E')
         {
             // String contains our special delimiter
+            puts("Delimiter\n");
+            puts(&inputCommand[arrLocation]);
             return false;
         }
     }
@@ -399,9 +418,27 @@ Prepare the string for writing to file
 void formatWriteString(char *output, char *command, char *action)
 {
     strcat(output, command);
-    strcat(output, "\x31");
+    strcat(output, "\x001F");
     strcat(output, action);
-    strcat(output, "\x30");
+    strcat(output, "\x001E");
+}
+
+/*
+Get path to the commands file (regular file)
+*/
+void getFilePath(char *filePath)
+{
+    strcpy(filePath, getenv("HOME"));
+    strcat(filePath, "/.pa/commands");
+}
+
+/*
+Get path to the commands file (regular file)
+*/
+void getTempFilePath(char *filePath)
+{
+    strcpy(filePath, getenv("HOME"));
+    strcat(filePath, "/.pa/commands_tmp");
 }
 
 /*
