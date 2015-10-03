@@ -23,8 +23,7 @@ void formatCommand(char *command, int count, char **arguments);
 bool checkCommandExists(char *inputCommand);
 bool validString(char *inputCommand, bool checkSingleQuote);
 void formatWriteString(char *output, char *command, char *action);
-void getFilePath(char *filePath);
-void getTempFilePath(char *filePath);
+void getFilePath(char *filePath, bool checkTemp);
 void badCommand(void);
 void fileNotFound(void);
 
@@ -78,7 +77,7 @@ void runCommand(char *inputCommand)
     // Begin process of retrieving all possible commands from the commands file
     // Get the file path
     char directory[100];
-    getFilePath(directory);
+    getFilePath(directory, false);
 
     // Set up the file
     FILE *commandFile;
@@ -131,7 +130,7 @@ void learnCommand()
     // (and for later use in writing to it)
     // Get the file path
     char directory[100];
-    getFilePath(directory);
+    getFilePath(directory, false);
     FILE *commandFile;
     commandFile = fopen(directory, "a+");
     if (commandFile == NULL)
@@ -182,7 +181,7 @@ void forgetCommand()
     // (and for later use)
     // Get the file path
     char directory[100];
-    getFilePath(directory);
+    getFilePath(directory, false);
     FILE *readFile;
     readFile = fopen(directory, "r");
     if (readFile == NULL)
@@ -201,7 +200,7 @@ void forgetCommand()
         // Open up a new command file that will take the place of the old one
         // Get the file path
         char directoryTemp[100];
-        getFilePath(directoryTemp);
+        getFilePath(directoryTemp, true);
         FILE *writeFile;
         writeFile = fopen(directoryTemp, "w");
 
@@ -348,7 +347,7 @@ bool checkCommandExists(char *inputCommand)
     {
         // Get the file path
         char directory[100];
-        getFilePath(directory);
+        getFilePath(directory, false);
         FILE *commandFile;
         commandFile = fopen(directory, "r");
 
@@ -442,19 +441,18 @@ void formatWriteString(char *output, char *command, char *action)
 /*
 Get path to the commands file (regular file)
 */
-void getFilePath(char *filePath)
+void getFilePath(char *filePath, bool checkTemp)
 {
     strcpy(filePath, getenv("HOME"));
-    strcat(filePath, "/.pa/commands");
-}
+    if (checkTemp)
+    {
+        strcat(filePath, "/.pa/commands_tmp");
+    }
+    else
+    {
+        strcat(filePath, "/.pa/commands");
+    }
 
-/*
-Get path to the commands file (regular file)
-*/
-void getTempFilePath(char *filePath)
-{
-    strcpy(filePath, getenv("HOME"));
-    strcat(filePath, "/.pa/commands_tmp");
 }
 
 /*
