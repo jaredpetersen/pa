@@ -1,23 +1,24 @@
-# Sample PA Commands (All Unix-Based OSs)
+# Sample PA Commands
+## General
 
 #### Get IP Address
-###### PA Command
+##### PA Command
 ```
 $ pa whats my ip
 ```
-###### Linux Command
+##### Linux Command
 ```
 ipconfig getifaddr en0 || ipconfig getifaddr en1
 ```
 
-# Sample PA Commands (Mac OSX)
+## Mac OSX
 
 #### Open Internet Browser
-###### PA Command
+##### PA Command
 ```
 $ pa open browser
 ```
-###### Linux Command
+##### Linux Command
 ```
 open http://www.google.com
 ```
