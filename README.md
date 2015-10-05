@@ -10,25 +10,25 @@ Coming Soon!
 ### Built in Commands
 You need to teach your PA everything you want it to do, which you can accomplish by running `pa learn command`. You will then be prompted for the name of the command that you would like to teach it and then the linux command that you want it to run.
 
-If you want it to forget a certain command, just run `pa forget command` and give it the name of the command that you would like it to forget when prompted.
+If you want your PA to forget a certain command, just run `pa forget command` and give it the name of the command that you would like it to forget when prompted.
 
 ### Examples
 Here are some things that you can teach your PA to do:
 
-Get your IP Address
+**Get your IP Address**
 ```
 $ pa whats my ip
 > 192.169.226.73
 ```
 
-Open Programs
+**Open Programs**
 ```
 $ pa open browser
 $ pa open word
 $ pa open itunes
 ```
 
-Play Music
+**Play Music**
 ```
 $ pa play music
 $ pa pause music
