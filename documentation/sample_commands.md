@@ -1,24 +1,26 @@
 # Sample PA Commands
 ## General
 
-#### Get IP Address
-##### PA Command
-```
-$ pa whats my ip
-```
-##### Linux Command
-```
-ipconfig getifaddr en0 || ipconfig getifaddr en1
-```
+| PA                   | Linux                                              |
+| -------------------- | -------------------------------------------------- |
+| `pa whats my ip`     | `ipconfig getifaddr en0 || ipconfig getifaddr en1` |
+| `pa shutdown pc`     | `sudo shutdown -h now`                             |
+| `pa restart pc`      | `sudo shutdown -r now`                             |
+| `pa watch star wars` | `telnet towel.blinkenlights.nl`                    |
+
+## Linux
+
+| PA             | Linux                                         |
+| -------------- | --------------------------------------------- |
+| `pa update pc` | `sudo apt-get update && sudo apt-get upgrade` |
 
 ## Mac OSX
 
-#### Open Internet Browser
-##### PA Command
-```
-$ pa open browser
-```
-##### Linux Command
-```
-open http://www.google.com
-```
+| PA                | Mac OSX                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| `pa open browser` | `open http://www.google.com/`                                         |
+| `pa open word`    | `open -a "Microsoft Word"`                                            |
+| `pa open music`   | `open -a iTunes`                                                      |
+| `pa play music`   | `open -a iTunes && osascript -e 'tell application "iTunes" to play'`  |
+| `pa pause music`  | `open -a iTunes && osascript -e 'tell application "iTunes" to pause'` |
+| `pa update pc`    | `sudo softwareupdate -l`                                              |
