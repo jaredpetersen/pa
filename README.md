@@ -10,10 +10,10 @@ You need to teach your PA everything you want it to do, which you can accomplish
 If you want your PA to forget a certain command, just run `pa forget command` and give it the name of the command that you would like it to forget when prompted.
 
 ### Examples
+<script src="http://api.html5media.info/1.1.8/html5media.min.js"></script>
 Here are some things that you can teach your PA to do:
 
 **Open Programs**
-<video src="documentation/app.mp4" autoplay loop></video>
 ```
 $ pa open browser
 $ pa open word
@@ -21,7 +21,6 @@ $ pa open itunes
 ```
 
 **Play Music**
-<video src="documentation/music.mp4" autoplay loop></video>
 ```
 $ pa play music
 $ pa pause music
