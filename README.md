@@ -10,7 +10,7 @@ You need to teach your PA everything you want it to do, which you can accomplish
 If you want your PA to forget a certain command, just run `pa forget command` and give it the name of the command that you would like it to forget when prompted.
 
 ### Examples
-<script src="http://api.html5media.info/1.1.8/html5media.min.js"></script>
+![Example GIF](http://res.cloudinary.com/dfmuruhjv/video/upload/v1444286704/music_mcmknx.gif)
 Here are some things that you can teach your PA to do:
 
 **Open Programs**
