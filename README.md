@@ -20,6 +20,7 @@ $ pa open itunes
 ```
 
 **Play Music**
+
 ![Example GIF](https://github.com/jaredpetersen/pa/raw/master/documentation/music.gif)
 ```
 $ pa play music
