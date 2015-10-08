@@ -4,9 +4,6 @@ Your teachable, personal computer assistant. Written in C, compatible with any U
 ## Usage
 The Personal Assistant (PA) program is a quick way to run programs and generally use your computer via the command line. If you can come up with a linux command or script, you can teach PA to use it.
 
-### Demo
-Coming Soon!
-
 ### Built in Commands
 You need to teach your PA everything you want it to do, which you can accomplish by running `pa learn command`. You will then be prompted for the name of the command that you would like to teach it and then the linux command that you want it to run.
 
@@ -15,13 +12,8 @@ If you want your PA to forget a certain command, just run `pa forget command` an
 ### Examples
 Here are some things that you can teach your PA to do:
 
-**Get your IP Address**
-```
-$ pa whats my ip
-> 192.169.226.73
-```
-
 **Open Programs**
+<video src="documentation/app.mp4" autoplay loop></video>
 ```
 $ pa open browser
 $ pa open word
@@ -29,6 +21,7 @@ $ pa open itunes
 ```
 
 **Play Music**
+<video src="documentation/music.mp4" autoplay loop></video>
 ```
 $ pa play music
 $ pa pause music
