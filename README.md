@@ -15,13 +15,14 @@ If you want your PA to forget a certain command, just run `pa forget command` an
 ### Examples
 Here are some things that you can teach your PA to do:
 
-**Open Programs**
+**Open/Close Programs**
 
 ![Open Programs GIF](https://github.com/jaredpetersen/pa/raw/master/documentation/gifs/app.gif)
 ```
 $ pa open browser
+$ pa close browser
 $ pa open word
-$ pa open itunes
+$ pa close word
 ```
 
 **Play Music**
