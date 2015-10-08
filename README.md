@@ -13,6 +13,8 @@ If you want your PA to forget a certain command, just run `pa forget command` an
 Here are some things that you can teach your PA to do:
 
 **Open Programs**
+
+![Open Programs GIF](https://github.com/jaredpetersen/pa/raw/master/documentation/app.gif)
 ```
 $ pa open browser
 $ pa open word
@@ -21,7 +23,7 @@ $ pa open itunes
 
 **Play Music**
 
-![Example GIF](https://github.com/jaredpetersen/pa/raw/master/documentation/music.gif)
+![Play/Pause Music GIF](https://github.com/jaredpetersen/pa/raw/master/documentation/music.gif)
 ```
 $ pa play music
 $ pa pause music
