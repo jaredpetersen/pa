@@ -385,8 +385,18 @@ bool validString(char *inputCommand, bool checkSingleQuote)
         return false;
     }
 
-    // Begin preparation for iteration
+    // Get length of string (for space check and iteration)
     int length = strlen(inputCommand) - 1;
+
+    // Make sure there aren't any leading or trailing spaces
+    if (inputCommand[0] == ' ' || inputCommand[length - 1] == ' ')
+    {
+        // There is a leading or trailing space
+        return false;
+    }
+
+    // Begin preparation for iteration
+
     bool allSpaces = true;
     int arrLocation;
 
