@@ -1,5 +1,5 @@
 # Personal Assistant
-Your teachable, personal computer assistant. Written in C, compatible with any Unix-based operating system.
+Your teachable personal computer assistant. Written in C, compatible with any Unix-based operating system.
 
 ## Usage
 The Personal Assistant (PA) program is a quick way to run programs and generally use your computer via the command line. If you can come up with a linux command or script, you can teach PA to use it.
