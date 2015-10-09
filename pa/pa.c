@@ -442,7 +442,7 @@ Prepare the string for writing to file
 */
 void formatWriteString(char *output, char *command, char *action)
 {
-    strcat(output, command);
+    strcpy(output, command);
     strcat(output, "\x001F");
     strcat(output, action);
     strcat(output, "\x001E");
