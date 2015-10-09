@@ -2,7 +2,7 @@
 # Install Personal Assistant
 
 echo "Installing Personal Assistant..."
-gcc ../pa/pa.c -o ../pa/pa -std=gnu99 && \
+gcc ../pa/pa.c -o ../pa/pa -std=gnu11 && \
 sudo cp ../pa/pa /usr/local/bin && \
 sudo mkdir ~/.pa ; \
 sudo cp ../pa/commands ../LICENSE ../README.md ~/.pa && \
