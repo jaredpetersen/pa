@@ -43,9 +43,9 @@ An expanded list of sample PA commands that you might want to use and their rela
 ### Advanced Install
 1. Download the code from GitHub with `git clone https://github.com/jaredpetersen/pa`
 2. Navigate to the pa folder within the cloned directory
-3. Run `gcc pa.c -o pa` to compile the code yourself
+3. Run `gcc pa.c -o pa -std=gnu99` to compile the code yourself
 4. Copy your compiled code to `/usr/local/bin` via `sudo cp ./pa /usr/local/bin`
 5. Create a directory called `.pa` within your home directory with `sudo mkdir ~/.pa`
 6. Copy only the supporting files from the `pa` folder into this new directory via `sudo cp ./pa/commands ./pa/LICENSE ./pa/README.md ~/.pa`
-7. Change the file permissions to anything in `~/.pa` via `sudo chmod -R 770 ~/.pa`
+7. Change the file permissions to anything in `~/.pa` via `sudo chmod -R 777 ~/.pa/*`
 8. Add the program to your filepath with `export PATH=$PATH:/usr/local/bin`
