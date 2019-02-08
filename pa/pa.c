@@ -14,18 +14,11 @@ Please see README and LICENSE for more information
 
 #define fileFormatBoth "%[^\x001F]\x001F%[^\x001E]\x001E"
 #define fileFormatCommand "%[^\x001F]\x001F%*[^\x001E]\x001E"
-#define RED   "\x1B[31m"
-#define GRN   "\x1B[32m"
-#define YEL   "\x1B[33m"
-#define BLU   "\x1B[34m"
-#define MAG   "\x1B[35m"
-#define CYN   "\x1B[36m"
-#define WHT   "\x1B[37m"
-#define RESET "\x1B[0m"
 
 void runCommand(char *inputCommand);
 void learnCommand(void);
 void forgetCommand(void);
+void listCommands(void);
 void promptUserValue(char *responseVar, char *prompt, bool checkCommand);
 void formatCommand(char *command, int count, char **arguments);
 bool checkCommandExists(char *inputCommand);
@@ -66,6 +59,11 @@ int main(int argc, char **argv)
         {
             // Forget an existing command
             forgetCommand();
+        }
+        else if (strcasecmp(command, "list commands") == 0)
+        {
+            // List all commands and actions
+            listCommands();
         }
         else
         {
@@ -259,6 +257,29 @@ void forgetCommand()
         printf("That command does not exist\n");
         exit(1);
     }
+}
+
+/*
+Print list of commands and actions
+*/
+void listCommands()
+{
+    // Get the file path
+    char directory[100];
+    getFilePath(directory, false);
+    FILE *commandFile;
+    commandFile = fopen(directory, "r");
+
+    char command[100];
+    char action[100];
+    while (fscanf(commandFile, fileFormatBoth, command, action) != EOF)
+    {
+        // Print command and action
+        printf("* %s: %s\n", command, action);
+    }
+
+    // Close the file
+    fclose(commandFile);
 }
 
 /*
