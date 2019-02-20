@@ -18,6 +18,7 @@ Please see README and LICENSE for more information
 void runCommand(char *inputCommand);
 void learnCommand(void);
 void forgetCommand(void);
+void listCommands(void);
 void promptUserValue(char *responseVar, char *prompt, bool checkCommand);
 void formatCommand(char *command, int count, char **arguments);
 bool checkCommandExists(char *inputCommand);
@@ -58,6 +59,11 @@ int main(int argc, char **argv)
         {
             // Forget an existing command
             forgetCommand();
+        }
+        else if (strcasecmp(command, "list commands") == 0)
+        {
+            // List all commands and actions
+            listCommands();
         }
         else
         {
@@ -251,6 +257,29 @@ void forgetCommand()
         printf("That command does not exist\n");
         exit(1);
     }
+}
+
+/*
+Print list of commands and actions
+*/
+void listCommands()
+{
+    // Get the file path
+    char directory[100];
+    getFilePath(directory, false);
+    FILE *commandFile;
+    commandFile = fopen(directory, "r");
+
+    char command[100];
+    char action[100];
+    while (fscanf(commandFile, fileFormatBoth, command, action) != EOF)
+    {
+        // Print command and action
+        printf("* %s: %s\n", command, action);
+    }
+
+    // Close the file
+    fclose(commandFile);
 }
 
 /*
